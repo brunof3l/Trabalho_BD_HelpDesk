@@ -1,755 +1,212 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sistema de Auditoria de TI - Sprint 1</title>
-    <style>
-      :root {
-        color-scheme: light;
-        --bg: #0b1020;
-        --panel: rgba(20, 26, 45, 0.92);
-        --text: #e8ecff;
-        --muted: #aab3da;
-        --border: rgba(255, 255, 255, 0.12);
-        --ok: #6ee7b7;
-        --bad: #fb7185;
-        --warn: #fbbf24;
-        --primary: #7aa2ff;
-        --shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
-        --radius: 14px;
-      }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-          Helvetica, Arial;
-        background: radial-gradient(1000px 700px at 20% 10%, #1a2450, var(--bg));
-        color: var(--text);
-        min-height: 100vh;
-        padding: 0;
-      }
-      .app-shell {
-        min-height: 100vh;
-        display: grid;
-        grid-template-rows: auto 1fr;
-      }
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: rgba(11, 16, 32, 0.6);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--border);
-      }
-      .topbar-inner {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .brand {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        min-width: 0;
-      }
-      .logo {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: radial-gradient(circle at 20% 20%, #9db7ff, #24409c);
-        box-shadow: 0 10px 28px rgba(122, 162, 255, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-      }
-      .brand strong {
-        font-size: 13px;
-        letter-spacing: 0.2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .brand span {
-        display: block;
-        font-size: 12px;
-        color: var(--muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .top-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-      .pill {
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        border: 1px solid var(--border);
-        color: var(--muted);
-        background: rgba(255, 255, 255, 0.05);
-      }
-      .pill.ok {
-        border-color: rgba(110, 231, 183, 0.45);
-        color: var(--ok);
-      }
-      .pill.bad {
-        border-color: rgba(251, 113, 133, 0.45);
-        color: var(--bad);
-      }
-      .container {
-        max-width: 1100px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 22px 18px 40px;
-      }
-      .panel {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(10px);
-      }
-      h1 {
-        font-size: 18px;
-        margin: 0 0 6px 0;
-        letter-spacing: 0.2px;
-      }
-      p {
-        margin: 0 0 14px 0;
-        color: var(--muted);
-        line-height: 1.4;
-        font-size: 13px;
-      }
-      label {
-        display: block;
-        font-size: 12px;
-        color: var(--muted);
-        margin: 12px 0 6px;
-      }
-      input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.06);
-        color: var(--text);
-        outline: none;
-      }
-      input:focus {
-        border-color: rgba(122, 162, 255, 0.55);
-      }
-      button {
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid rgba(122, 162, 255, 0.55);
-        background: rgba(122, 162, 255, 0.16);
-        color: var(--text);
-        cursor: pointer;
-        font-weight: 600;
-      }
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .btn {
-        width: 100%;
-      }
-      .btn.secondary {
-        border-color: var(--border);
-        background: rgba(255, 255, 255, 0.06);
-        color: var(--text);
-      }
-      .btn.small {
-        width: auto;
-        padding: 8px 10px;
-        font-size: 12px;
-      }
-      .grid2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-      .grid3 {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 12px;
-      }
-      @media (max-width: 960px) {
-        .grid3 {
-          grid-template-columns: 1fr;
-        }
-      }
-      @media (max-width: 560px) {
-        .grid2 {
-          grid-template-columns: 1fr;
-        }
-      }
-      .auth {
-        display: grid;
-        grid-template-columns: 1.25fr 0.9fr;
-        gap: 14px;
-        padding: 18px;
-      }
-      @media (max-width: 960px) {
-        .auth {
-          grid-template-columns: 1fr;
-        }
-      }
-      .tabs {
-        display: inline-flex;
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .tab {
-        border: 0;
-        background: transparent;
-        color: var(--muted);
-        padding: 10px 14px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .tab.active {
-        color: var(--text);
-        background: rgba(122, 162, 255, 0.16);
-      }
-      .kpis {
-        padding: 18px;
-      }
-      .kpi {
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 14px;
-        padding: 14px;
-      }
-      .kpi .label {
-        font-size: 12px;
-        color: var(--muted);
-      }
-      .kpi .value {
-        margin-top: 8px;
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: 0.2px;
-      }
-      .kpi .hint {
-        margin-top: 6px;
-        font-size: 12px;
-        color: var(--muted);
-      }
-      .section-title {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        align-items: baseline;
-        margin: 0 0 10px 0;
-      }
-      .section-title h2 {
-        margin: 0;
-        font-size: 14px;
-        letter-spacing: 0.2px;
-      }
-      .section-title small {
-        color: var(--muted);
-        font-size: 12px;
-      }
-      .list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 10px;
-      }
-      .list li {
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 12px;
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: center;
-      }
-      .badge {
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        border: 1px solid var(--border);
-        color: var(--muted);
-        white-space: nowrap;
-      }
-      .badge.ok {
-        border-color: rgba(110, 231, 183, 0.45);
-        color: var(--ok);
-      }
-      .badge.bad {
-        border-color: rgba(251, 113, 133, 0.45);
-        color: var(--bad);
-      }
-      .badge.warn {
-        border-color: rgba(251, 191, 36, 0.45);
-        color: var(--warn);
-      }
-      pre {
-        margin: 12px 0 0;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.22);
-        overflow: auto;
-        font-size: 12px;
-        line-height: 1.35;
-      }
-      .hidden {
-        display: none !important;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app-shell">
-      <header class="topbar">
-        <div class="topbar-inner">
-          <div class="brand" title="Sistema de Auditoria de TI">
-            <div class="logo" aria-hidden="true"></div>
-            <div style="min-width: 0">
-              <strong>Sistema de Auditoria de TI</strong>
-              <span id="envLine">Autenticação / CQRS</span>
-            </div>
-          </div>
-          <div class="top-actions">
-            <span class="pill bad" id="topStatusPill">Offline</span>
-            <button class="btn small secondary hidden" id="logoutBtn">Sair</button>
-          </div>
-        </div>
-      </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auditoria de TI - Acesso</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      <main class="container">
-        <section class="panel auth" id="authView">
-          <div>
-            <div class="section-title">
-              <div>
-                <h1>Acesso ao Sistema</h1>
-                <small>Login/cadastro via Firebase Auth (Email/Senha)</small>
-              </div>
-              <div class="tabs" role="tablist" aria-label="Autenticação">
-                <button class="tab active" id="tabLogin" type="button" role="tab">
-                  Entrar
-                </button>
-                <button class="tab" id="tabSignup" type="button" role="tab">
-                  Criar conta
-                </button>
-              </div>
-            </div>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #333;
+    }
 
-            <section class="grid2">
-              <div>
-                <label for="email">Email</label>
-                <input id="email" type="email" autocomplete="username" />
-              </div>
-              <div>
-                <label for="password">Senha</label>
-                <input
-                  id="password"
-                  type="password"
-                  autocomplete="current-password"
-                />
-              </div>
-            </section>
+    .login-container {
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 400px;
+    }
 
-            <div style="display: grid; gap: 10px; margin-top: 14px">
-              <button class="btn" id="submitBtn">Entrar</button>
-            </div>
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1a202c;
+    }
 
-            <pre id="out">Aguardando ação…</pre>
-          </div>
+    .input-group {
+      margin-bottom: 16px;
+    }
 
-          <aside class="panel" style="padding: 18px; box-shadow: none">
-            <div class="section-title">
-              <h2>Serviços</h2>
-              <small>Validação após login</small>
-            </div>
-            <ul class="list" id="serviceList">
-              <li>
-                <div>Banco 1 (Firebase)</div>
-                <span class="badge warn" id="svcFirebase">—</span>
-              </li>
-              <li>
-                <div>Banco 2</div>
-                <span class="badge warn" id="svcMySql">—</span>
-              </li>
-              <li>
-                <div>Banco 3</div>
-                <span class="badge warn" id="svcSqlite">—</span>
-              </li>
-            </ul>
-          </aside>
-        </section>
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+    }
 
-        <section class="panel hidden" id="appView">
-          <div style="padding: 18px 18px 6px">
-            <div class="section-title">
-              <div>
-                <h2>Dashboard (mínimo)</h2>
-                <small id="userLine">—</small>
-              </div>
-              <div style="display: flex; gap: 10px; align-items: center">
-                <span class="pill" id="sessionPill">Sessão</span>
-              </div>
-            </div>
-          </div>
+    input:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    }
 
-          <div class="kpis">
-            <div class="grid3">
-              <div class="kpi">
-                <div class="label">Chamados abertos</div>
-                <div class="value" id="kpiAbertos">—</div>
-                <div class="hint">Placeholder (Sprint 2: leitura do SQLite)</div>
-              </div>
-              <div class="kpi">
-                <div class="label">Chamados em andamento</div>
-                <div class="value" id="kpiAndamento">—</div>
-                <div class="hint">Placeholder (Sprint 2: CQRS Read Model)</div>
-              </div>
-              <div class="kpi">
-                <div class="label">Última verificação</div>
-                <div class="value" id="kpiUltima">—</div>
-                <div class="hint">Estado dos bancos após autenticação</div>
-              </div>
-            </div>
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #3182ce;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 10px;
+    }
 
-            <div style="margin-top: 12px" class="panel" style="box-shadow: none">
-              <div style="padding: 14px 14px 6px">
-                <div class="section-title">
-                  <h2>Infra do Sprint 1</h2>
-                  <small>Próximo passo: CRUD de chamados + sincronização</small>
-                </div>
-              </div>
-              <div style="padding: 0 14px 14px">
-                <ul class="list" id="serviceListApp" style="gap: 10px"></ul>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
+    button:hover {
+      background-color: #2b6cb0;
+    }
+
+    button:disabled {
+      background-color: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    #resultado {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      min-height: 20px;
+      line-height: 1.5;
+    }
+
+    .status-ok { color: #38a169; }
+    .status-erro { color: #e53e3e; }
+    .status-neutro { color: #718096; }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h1>Auditoria de TI</h1>
+
+    <div class="input-group">
+      <input type="email" id="email" placeholder="E-mail corporativo" autocomplete="email" />
     </div>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-      import {
-        getAuth,
-        createUserWithEmailAndPassword,
-        onAuthStateChanged,
-        signOut,
-        signInWithEmailAndPassword,
-      } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    <div class="input-group">
+      <input type="password" id="senha" placeholder="Senha" autocomplete="current-password" />
+    </div>
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyAch2KSa3odfakiNsIIsBp2mHcC-766SbI",
-        authDomain: "sistema-de-auditoria-de-ti.firebaseapp.com",
-        projectId: "sistema-de-auditoria-de-ti",
-        storageBucket: "sistema-de-auditoria-de-ti.firebasestorage.app",
-        messagingSenderId: "324210445904",
-        appId: "1:324210445904:web:095b5e2f5935abcd154b55",
-        measurementId: "G-CNRYBZ58KR",
-      };
+    <button id="entrar">Acessar Sistema</button>
 
-      const authView = document.getElementById("authView");
-      const appView = document.getElementById("appView");
-      const envLine = document.getElementById("envLine");
-      const out = document.getElementById("out");
-      const submitBtn = document.getElementById("submitBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const topStatusPill = document.getElementById("topStatusPill");
+    <p id="resultado"></p>
+  </div>
 
-      const tabLogin = document.getElementById("tabLogin");
-      const tabSignup = document.getElementById("tabSignup");
-      const userLine = document.getElementById("userLine");
-      const sessionPill = document.getElementById("sessionPill");
-      const kpiAbertos = document.getElementById("kpiAbertos");
-      const kpiAndamento = document.getElementById("kpiAndamento");
-      const kpiUltima = document.getElementById("kpiUltima");
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-      const svcFirebase = document.getElementById("svcFirebase");
-      const svcMySql = document.getElementById("svcMySql");
-      const svcSqlite = document.getElementById("svcSqlite");
-      const serviceListApp = document.getElementById("serviceListApp");
+    const firebaseConfig = {
+      apiKey: "AIzaSyAch2KSa3odfakiNsIIsBp2mHcC-766SbI",
+      authDomain: "sistema-de-auditoria-de-ti.firebaseapp.com",
+      projectId: "sistema-de-auditoria-de-ti",
+      storageBucket: "sistema-de-auditoria-de-ti.firebasestorage.app",
+      messagingSenderId: "324210445904",
+      appId: "1:324210445904:web:095b5e2f5935abcd154b55"
+    };
 
-      let mode = "login";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-      const HOST = window.location.hostname;
-      const READ_ORIGIN = window.location.origin;
-      const AUTH_ORIGIN = `http://${HOST}:3001`;
-      const WRITE_ORIGIN = `http://${HOST}:3002`;
+    const botao = document.getElementById("entrar");
+    const resultado = document.getElementById("resultado");
 
-      envLine.textContent = `UI ${READ_ORIGIN} · AUTH ${AUTH_ORIGIN} · WRITE ${WRITE_ORIGIN}`;
+    async function fetchJson(url, options) {
+      const resp = await fetch(url, options);
+      const data = await resp.json().catch(() => ({}));
+      return { ok: resp.ok, status: resp.status, data };
+    }
 
-      function setOut(value) {
-        out.textContent =
-          typeof value === "string" ? value : JSON.stringify(value, null, 2);
+    botao.addEventListener("click", async () => {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      if (!email || !senha) {
+        resultado.textContent = "⚠️ Por favor, preencha o e-mail e a senha.";
+        resultado.className = "status-erro";
+        return;
       }
 
-      function setTopStatus(connected) {
-        if (connected) {
-          topStatusPill.textContent = "Online";
-          topStatusPill.className = "pill ok";
-        } else {
-          topStatusPill.textContent = "Offline";
-          topStatusPill.className = "pill bad";
-        }
-      }
+      resultado.textContent = "Autenticando de forma segura...";
+      resultado.className = "status-neutro";
+      botao.disabled = true;
+      botao.textContent = "Aguarde...";
 
-      function setTab(nextMode) {
-        mode = nextMode;
-        tabLogin.classList.toggle("active", mode === "login");
-        tabSignup.classList.toggle("active", mode === "signup");
-        submitBtn.textContent = mode === "login" ? "Entrar" : "Criar conta";
-      }
+      try {
+        const credencial = await signInWithEmailAndPassword(auth, email, senha);
+        const token = await credencial.user.getIdToken(true);
 
-      function setServiceBadge(el, ok, label) {
-        el.textContent = label || (ok ? "OK" : "ERRO");
-        if (ok === true) {
-          el.className = "badge ok";
-        } else if (ok === false) {
-          el.className = "badge bad";
-        } else {
-          el.className = "badge warn";
-        }
-      }
+        const host = window.location.hostname;
+        const AUTH_ORIGIN = `http://${host}:3001`;
+        const WRITE_ORIGIN = `http://${host}:3002`;
+        const READ_ORIGIN = window.location.origin;
 
-      function renderServices(services, errors) {
-        const firebaseOk = services?.firebaseOk;
-        const mysqlOk = services?.mysqlOk;
-        const sqliteOk = services?.sqliteOk;
-
-        setServiceBadge(svcFirebase, firebaseOk, firebaseOk ? "OK" : "ERRO");
-        setServiceBadge(
-          svcMySql,
-          mysqlOk,
-          mysqlOk ? "OK" : `ERRO${errors?.mysqlError ? ` (${errors.mysqlError})` : ""}`
-        );
-        setServiceBadge(
-          svcSqlite,
-          sqliteOk,
-          sqliteOk ? "OK" : `ERRO${errors?.sqliteError ? ` (${errors.sqliteError})` : ""}`
-        );
-
-        const items = [
-          {
-            name: "Banco 1 (Firebase)",
-            ok: Boolean(firebaseOk),
-            detail: firebaseOk ? "Admin SDK validado via token" : "Falha na validação",
-          },
-          {
-            name: "Banco 2",
-            ok: Boolean(mysqlOk),
-            detail: mysqlOk
-              ? "MySQL: conexão OK + tabela 'chamados' pronta"
-              : errors?.mysqlError
-                ? `Conexão falhou: ${errors.mysqlError}`
-                : "Conexão falhou",
-          },
-          {
-            name: "Banco 3",
-            ok: Boolean(sqliteOk),
-            detail: sqliteOk
-              ? "SQLite: arquivo do read model disponível"
-              : errors?.sqliteError
-                ? `Falhou: ${errors.sqliteError}`
-                : "Falhou",
-          },
-        ];
-
-        serviceListApp.innerHTML = items
-          .map((it) => {
-            const cls = it.ok ? "badge ok" : "badge bad";
-            const text = it.ok ? "OK" : "ERRO";
-            return `
-              <li>
-                <div>
-                  <div style="font-weight: 700; font-size: 13px">${it.name}</div>
-                  <div style="font-size: 12px; color: var(--muted); margin-top: 4px">${it.detail}</div>
-                </div>
-                <span class="${cls}">${text}</span>
-              </li>
-            `;
-          })
-          .join("");
-
-        const connected = Boolean(firebaseOk && mysqlOk && sqliteOk);
-        setTopStatus(connected);
-        sessionPill.textContent = connected ? "Sessão ativa" : "Sessão parcial";
-        sessionPill.className = connected ? "pill ok" : "pill bad";
-        kpiUltima.textContent = new Date().toLocaleTimeString("pt-BR");
-      }
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-
-      function showAuth() {
-        authView.classList.remove("hidden");
-        appView.classList.add("hidden");
-        logoutBtn.classList.add("hidden");
-        setTopStatus(false);
-      }
-
-      function showApp() {
-        authView.classList.add("hidden");
-        appView.classList.remove("hidden");
-        logoutBtn.classList.remove("hidden");
-      }
-
-      async function fetchJson(url, options) {
-        const resp = await fetch(url, options);
-        const data = await resp.json().catch(() => ({}));
-        return { ok: resp.ok, status: resp.status, data };
-      }
-
-      async function validateWithBackend(user) {
-        const idToken = await user.getIdToken(true);
-        const authResp = await fetchJson(`${AUTH_ORIGIN}/auth`, {
+        const loginResponse = await fetchJson(`${AUTH_ORIGIN}/auth`, {
           method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ token: idToken }),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ token })
         });
 
-        if (!authResp.ok) return authResp.data;
+        if (!loginResponse.ok) {
+          throw new Error("Sessão recusada pelo servidor.");
+        }
 
-        const [writeHealth, readHealth, authHealth] = await Promise.all([
+        const [writeStatus, readStatus] = await Promise.all([
           fetchJson(`${WRITE_ORIGIN}/health`),
-          fetchJson(`${READ_ORIGIN}/health`),
-          fetchJson(`${AUTH_ORIGIN}/health`),
+          fetchJson(`${READ_ORIGIN}/health`)
         ]);
 
-        return {
-          ok: true,
-          user: authResp.data?.user || null,
-          services: {
-            firebaseOk: Boolean(authHealth.data?.services?.firebaseOk),
-            mysqlOk: Boolean(writeHealth.data?.services?.mysqlOk),
-            sqliteOk: Boolean(readHealth.data?.services?.sqliteOk),
-          },
-          errors: {
-            mysqlError: writeHealth.data?.errors?.mysqlError || null,
-            sqliteError: readHealth.data?.errors?.sqliteError || null,
-          },
-          raw: {
-            auth: authResp.data,
-            authHealth: authHealth.data,
-            writeHealth: writeHealth.data,
-            readHealth: readHealth.data,
-          },
-        };
+        const mysqlOk = Boolean(writeStatus.data?.services?.mysqlOk);
+        const sqliteOk = Boolean(readStatus.data?.services?.sqliteOk);
+        const mysqlText = mysqlOk ? "OK" : `ERRO${writeStatus.data?.errors?.mysqlError ? ` (${writeStatus.data.errors.mysqlError})` : ""}`;
+        const sqliteText = sqliteOk ? "OK" : `ERRO${readStatus.data?.errors?.sqliteError ? ` (${readStatus.data.errors.sqliteError})` : ""}`;
+
+        resultado.className = "status-ok";
+        resultado.innerHTML = `
+          ✅ <strong>Autenticação concluída!</strong><br>
+          <span style="font-size: 13px; color: #4a5568;">
+            Banco 2 (MySQL): ${mysqlText}<br>
+            Banco 3 (SQLite): ${sqliteText}
+          </span>
+        `;
+
+        sessionStorage.setItem("idToken", token);
+        sessionStorage.setItem("userEmail", email);
+        setTimeout(() => {
+          window.location.href = "/dashboard.html";
+        }, 600);
+      } catch (error) {
+        resultado.className = "status-erro";
+        resultado.textContent = "❌ Acesso negado. Verifique suas credenciais.";
+      } finally {
+        botao.disabled = false;
+        botao.textContent = "Acessar Sistema";
       }
-
-      async function handleSubmit() {
-        submitBtn.disabled = true;
-        setServiceBadge(svcFirebase, null, "—");
-        setServiceBadge(svcMySql, null, "—");
-        setServiceBadge(svcSqlite, null, "—");
-        setOut("Processando…");
-        try {
-          const email = document.getElementById("email").value.trim();
-          const password = document.getElementById("password").value;
-          if (!email || !password) throw new Error("Informe email e senha.");
-
-          let cred;
-          if (mode === "login") {
-            cred = await signInWithEmailAndPassword(auth, email, password);
-          } else {
-            cred = await createUserWithEmailAndPassword(auth, email, password);
-          }
-
-          const data = await validateWithBackend(cred.user);
-          if (data?.ok !== true) {
-            showAuth();
-            setOut(data);
-            return;
-          }
-          userLine.textContent = data?.user?.email
-            ? `Logado como ${data.user.email}`
-            : `Logado como UID ${data?.user?.uid || "—"}`;
-
-          renderServices(data?.services, data?.errors);
-          kpiAbertos.textContent = "—";
-          kpiAndamento.textContent = "—";
-
-          showApp();
-          setOut(data);
-        } catch (err) {
-          if (mode === "signup" && err?.code === "auth/email-already-in-use") {
-            setTab("login");
-            setOut(
-              "Este email já está cadastrado. Clique em “Entrar” e faça login com a mesma senha."
-            );
-            return;
-          }
-
-          if (mode === "login" && err?.code === "auth/invalid-credential") {
-            setOut("Email ou senha inválidos. Verifique e tente novamente.");
-            return;
-          }
-
-          if (mode === "login" && err?.code === "auth/user-not-found") {
-            setTab("signup");
-            setOut("Usuário não encontrado. Clique em “Criar conta” para cadastrar.");
-            return;
-          }
-
-          showAuth();
-          setOut({ ok: false, error: String(err?.message || err) });
-        } finally {
-          submitBtn.disabled = false;
-        }
-      }
-
-      tabLogin.addEventListener("click", () => setTab("login"));
-      tabSignup.addEventListener("click", () => setTab("signup"));
-
-      submitBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        handleSubmit();
-      });
-
-      logoutBtn.addEventListener("click", async () => {
-        await signOut(auth);
-        showAuth();
-        setOut("Sessão encerrada.");
-      });
-
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          showAuth();
-          return;
-        }
-
-        try {
-          const data = await validateWithBackend(user);
-          if (data?.ok !== true) {
-            showAuth();
-            setOut(data);
-            return;
-          }
-          userLine.textContent = data?.user?.email
-            ? `Logado como ${data.user.email}`
-            : `Logado como UID ${data?.user?.uid || "—"}`;
-          renderServices(data?.services, data?.errors);
-          showApp();
-          setOut(data);
-        } catch (e) {
-          showAuth();
-          setOut({ ok: false, error: String(e?.message || e) });
-        }
-      });
-
-      setTab("login");
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>

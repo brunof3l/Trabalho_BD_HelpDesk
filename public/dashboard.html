@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auditoria de TI - Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+
+    .brand p {
+      font-size: 13px;
+      color: #4a5568;
+    }
+
+    .btn {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      cursor: pointer;
+      font-weight: 600;
+      color: #1a202c;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #f7fafc;
+    }
+
+    .grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      padding: 18px;
+    }
+
+    .card h2 {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #1a202c;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #4a5568;
+      margin-bottom: 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.12);
+    }
+
+    .primary {
+      width: 100%;
+      padding: 12px;
+      background-color: #3182ce;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 6px;
+    }
+
+    .primary:hover {
+      background-color: #2b6cb0;
+    }
+
+    .primary:disabled {
+      background-color: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #4a5568;
+      line-height: 1.4;
+      min-height: 20px;
+    }
+
+    .ok { color: #38a169; }
+    .erro { color: #e53e3e; }
+    .neutro { color: #718096; }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f7fafc;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .item-title {
+      font-weight: 800;
+      color: #1a202c;
+      font-size: 14px;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      color: #4a5568;
+      background: #ffffff;
+      white-space: nowrap;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      font-size: 13px;
+      color: #2d3748;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Dashboard · Auditoria de TI</h1>
+        <p id="userLine">Sessão: —</p>
+      </div>
+      <button class="btn" id="logoutBtn">Logout</button>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>Abrir Novo Chamado</h2>
+        <div class="field">
+          <label for="titulo">Título</label>
+          <input id="titulo" type="text" placeholder="Ex: Falha de acesso ao servidor" />
+        </div>
+        <div class="field">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" placeholder="Descreva o problema, impacto e evidências"></textarea>
+        </div>
+        <button class="primary" id="criarBtn">Criar Chamado</button>
+        <p class="hint neutro" id="msg">Pronto para criar um novo chamado.</p>
+      </section>
+
+      <section class="card">
+        <h2>Relatório de Auditoria</h2>
+        <div class="list" id="lista"></div>
+        <p class="hint neutro" id="msgLista"></p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAch2KSa3odfakiNsIIsBp2mHcC-766SbI",
+      authDomain: "sistema-de-auditoria-de-ti.firebaseapp.com",
+      projectId: "sistema-de-auditoria-de-ti",
+      storageBucket: "sistema-de-auditoria-de-ti.firebasestorage.app",
+      messagingSenderId: "324210445904",
+      appId: "1:324210445904:web:095b5e2f5935abcd154b55"
+    };
+
+    initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    const token = sessionStorage.getItem("idToken");
+    const email = sessionStorage.getItem("userEmail");
+    const userLine = document.getElementById("userLine");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const criarBtn = document.getElementById("criarBtn");
+    const msg = document.getElementById("msg");
+    const msgLista = document.getElementById("msgLista");
+    const lista = document.getElementById("lista");
+
+    const host = window.location.hostname;
+    const AUTH_ORIGIN = `http://${host}:3001`;
+    const WRITE_ORIGIN = `http://${host}:3002`;
+    const READ_ORIGIN = window.location.origin;
+
+    userLine.textContent = email ? `Sessão: ${email}` : "Sessão ativa";
+
+    if (!token) {
+      window.location.href = "/";
+    }
+
+    async function fetchJson(url, options) {
+      const resp = await fetch(url, options);
+      const data = await resp.json().catch(() => ({}));
+      return { ok: resp.ok, status: resp.status, data };
+    }
+
+    function setMsg(el, text, kind) {
+      el.textContent = text;
+      el.className = `hint ${kind || "neutro"}`;
+    }
+
+    async function validarSessao() {
+      const r = await fetchJson(`${AUTH_ORIGIN}/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      });
+      if (!r.ok) {
+        sessionStorage.clear();
+        window.location.href = "/";
+      }
+    }
+
+    async function carregarRelatorios() {
+      msgLista.textContent = "Carregando chamados...";
+      const r = await fetchJson(`${READ_ORIGIN}/relatorios`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!r.ok) {
+        msgLista.textContent = "Não foi possível carregar os relatórios.";
+        return;
+      }
+
+      const items = r.data?.items || [];
+      if (items.length === 0) {
+        lista.innerHTML = "";
+        msgLista.textContent = "Nenhum chamado encontrado ainda.";
+        return;
+      }
+
+      msgLista.textContent = "";
+      lista.innerHTML = items.map((it) => {
+        const status = String(it.status || "ABERTO");
+        const data = String(it.data_criacao || "");
+        const titulo = String(it.titulo || "");
+        const descricao = String(it.descricao || "");
+        return `
+          <div class="item">
+            <div class="item-top">
+              <div class="item-title">#${it.id} · ${titulo}</div>
+              <span class="badge">${status}</span>
+            </div>
+            <div class="meta">${data}</div>
+            <div class="desc">${descricao}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function criarChamadoHandler() {
+      const titulo = document.getElementById("titulo").value.trim();
+      const descricao = document.getElementById("descricao").value.trim();
+
+      if (!titulo || !descricao) {
+        setMsg(msg, "Preencha Título e Descrição.", "erro");
+        return;
+      }
+
+      criarBtn.disabled = true;
+      setMsg(msg, "Criando chamado...", "neutro");
+
+      const r = await fetchJson(`${WRITE_ORIGIN}/chamados`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ titulo, descricao })
+      });
+
+      if (!r.ok) {
+        setMsg(msg, r.data?.error || "Erro ao criar chamado.", "erro");
+        criarBtn.disabled = false;
+        return;
+      }
+
+      document.getElementById("titulo").value = "";
+      document.getElementById("descricao").value = "";
+      setMsg(msg, "Chamado criado com sucesso.", "ok");
+      criarBtn.disabled = false;
+      await carregarRelatorios();
+    }
+
+    logoutBtn.addEventListener("click", async () => {
+      sessionStorage.clear();
+      await signOut(auth).catch(() => {});
+      window.location.href = "/";
+    });
+
+    criarBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      criarChamadoHandler();
+    });
+
+    await validarSessao();
+    await carregarRelatorios();
+  </script>
+</body>
+</html>

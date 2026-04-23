@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
 const express = require("express");
 const admin = require("firebase-admin");
 
@@ -10,6 +11,7 @@ const {
 } = require("./banco2_mysql");
 
 const { getSqliteFilePath, openSqliteDb, initSqlite } = require("./banco3_SQLite");
+const { criarChamado, listarRelatorios, sincronizarChamadoParaSqlite } = require("./database");
 
 function initFirebaseAdmin() {
   if (admin.apps.length > 0) return;
@@ -60,6 +62,66 @@ function corsDev(req, res, next) {
   res.setHeader("access-control-allow-headers", "content-type,authorization");
   if (req.method === "OPTIONS") return res.status(204).end();
   next();
+}
+
+function readBearerToken(req) {
+  const header = String(req.headers.authorization || "");
+  if (!header.startsWith("Bearer ")) return null;
+  return header.slice("Bearer ".length).trim();
+}
+
+async function requireAuth(req, res) {
+  // Validação do token Firebase (ID Token) para proteger as rotas do dashboard
+  const token = readBearerToken(req);
+  if (!token) {
+    res.status(401).json({ ok: false, error: "Token ausente" });
+    return null;
+  }
+
+  try {
+    return await admin.auth().verifyIdToken(token);
+  } catch (err) {
+    res.status(401).json({ ok: false, error: "Não autorizado" });
+    return null;
+  }
+}
+
+function httpJson(method, port, routePath, body) {
+  return new Promise((resolve, reject) => {
+    const rawBody = body ? Buffer.from(JSON.stringify(body), "utf8") : null;
+
+    const req = http.request(
+      {
+        host: "127.0.0.1",
+        port,
+        path: routePath,
+        method,
+        headers: {
+          "content-type": "application/json",
+          ...(rawBody ? { "content-length": rawBody.length } : {}),
+        },
+      },
+      (res) => {
+        let data = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          const parsed = (() => {
+            try {
+              return JSON.parse(data || "{}");
+            } catch {
+              return {};
+            }
+          })();
+          resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, data: parsed });
+        });
+      }
+    );
+
+    req.on("error", reject);
+    if (rawBody) req.write(rawBody);
+    req.end();
+  });
 }
 
 async function getMySqlHealth(mysqlPool) {
@@ -151,6 +213,32 @@ function startWriteServer(port, mysqlPool) {
     });
   });
 
+  app.post("/chamados", async (req, res) => {
+    // CQRS (Write): cria chamado no MySQL e dispara uma "sincronização" simples para o SQLite (Read)
+    const decoded = await requireAuth(req, res);
+    if (!decoded) return;
+
+    const titulo = req.body?.titulo;
+    const descricao = req.body?.descricao;
+
+    try {
+      const chamado = await criarChamado(mysqlPool, { titulo, descricao });
+
+      const sync = await httpJson("POST", Number(process.env.PORT || 3000), "/relatorios/sync", {
+        uid: decoded.uid,
+        chamado,
+      });
+
+      res.json({
+        ok: true,
+        chamado,
+        syncOk: Boolean(sync.ok),
+      });
+    } catch (e) {
+      res.status(400).json({ ok: false, error: e?.message || "Erro ao criar chamado" });
+    }
+  });
+
   app.listen(port, () => {
     process.stdout.write(`Servidor WRITE (MySQL) em http://localhost:${port}\n`);
   });
@@ -159,6 +247,7 @@ function startWriteServer(port, mysqlPool) {
 function startReadServer(port, sqliteDb, sqliteFilePath) {
   const app = express();
   app.use(express.json({ limit: "1mb" }));
+  app.use(corsDev);
 
   app.get("/health", async (req, res) => {
     const { sqliteOk, sqliteError } = await getSqliteHealth(sqliteDb, sqliteFilePath);
@@ -167,6 +256,46 @@ function startReadServer(port, sqliteDb, sqliteFilePath) {
       services: { sqliteOk },
       errors: { sqliteError },
     });
+  });
+
+  app.get("/status", async (req, res) => {
+    // Endpoint usado pela UI: status consolidado (Banco 2 e Banco 3)
+    const writePort = Number(process.env.WRITE_PORT || 3002);
+    const writeHealth = await httpJson("GET", writePort, "/health");
+    const sqliteHealth = await getSqliteHealth(sqliteDb, sqliteFilePath);
+
+    res.json({
+      mysql: writeHealth.data?.services?.mysqlOk ? "OK" : "ERRO",
+      sqlite: sqliteHealth.sqliteOk ? "OK" : "ERRO",
+    });
+  });
+
+  app.post("/relatorios/sync", async (req, res) => {
+    // CQRS (Read): recebe o resumo do chamado e persiste no SQLite
+    const chamado = req.body?.chamado;
+    if (!chamado?.id) return res.status(400).json({ ok: false, error: "Chamado inválido" });
+
+    try {
+      await initSqlite(sqliteDb);
+      const relatorio = await sincronizarChamadoParaSqlite(sqliteDb, chamado);
+      res.json({ ok: true, relatorio });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e?.message || "Erro ao sincronizar" });
+    }
+  });
+
+  app.get("/relatorios", async (req, res) => {
+    // CQRS (Read): lista os chamados desnormalizados gravados no SQLite para o dashboard
+    const decoded = await requireAuth(req, res);
+    if (!decoded) return;
+
+    try {
+      await initSqlite(sqliteDb);
+      const rows = await listarRelatorios(sqliteDb, 100);
+      res.json({ ok: true, items: rows });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e?.message || "Erro ao listar relatórios" });
+    }
   });
 
   app.use(
