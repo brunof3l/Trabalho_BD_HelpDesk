@@ -366,9 +366,6 @@
 
             <div style="display: grid; gap: 10px; margin-top: 14px">
               <button class="btn" id="submitBtn">Entrar</button>
-              <button class="btn secondary" id="guestBtn" type="button">
-                Ver demonstração (sem login)
-              </button>
             </div>
 
             <pre id="out">Aguardando ação…</pre>
@@ -385,11 +382,11 @@
                 <span class="badge warn" id="svcFirebase">—</span>
               </li>
               <li>
-                <div>Banco 2 (MySQL)</div>
+                <div>Banco 2</div>
                 <span class="badge warn" id="svcMySql">—</span>
               </li>
               <li>
-                <div>Banco 3 (SQLite)</div>
+                <div>Banco 3</div>
                 <span class="badge warn" id="svcSqlite">—</span>
               </li>
             </ul>
@@ -469,7 +466,6 @@
       const envLine = document.getElementById("envLine");
       const out = document.getElementById("out");
       const submitBtn = document.getElementById("submitBtn");
-      const guestBtn = document.getElementById("guestBtn");
       const logoutBtn = document.getElementById("logoutBtn");
       const topStatusPill = document.getElementById("topStatusPill");
 
@@ -552,19 +548,19 @@
             detail: firebaseOk ? "Admin SDK validado via token" : "Falha na validação",
           },
           {
-            name: "Banco 2 (MySQL)",
+            name: "Banco 2",
             ok: Boolean(mysqlOk),
             detail: mysqlOk
-              ? "Conexão OK + tabela 'chamados' pronta"
+              ? "MySQL: conexão OK + tabela 'chamados' pronta"
               : errors?.mysqlError
                 ? `Conexão falhou: ${errors.mysqlError}`
                 : "Conexão falhou",
           },
           {
-            name: "Banco 3 (SQLite)",
+            name: "Banco 3",
             ok: Boolean(sqliteOk),
             detail: sqliteOk
-              ? "Arquivo do read model disponível"
+              ? "SQLite: arquivo do read model disponível"
               : errors?.sqliteError
                 ? `Falhou: ${errors.sqliteError}`
                 : "Falhou",
@@ -655,7 +651,6 @@
 
       async function handleSubmit() {
         submitBtn.disabled = true;
-        guestBtn.disabled = true;
         setServiceBadge(svcFirebase, null, "—");
         setServiceBadge(svcMySql, null, "—");
         setServiceBadge(svcSqlite, null, "—");
@@ -712,32 +707,7 @@
           setOut({ ok: false, error: String(err?.message || err) });
         } finally {
           submitBtn.disabled = false;
-          guestBtn.disabled = false;
         }
-      }
-
-      async function handleGuest() {
-        showApp();
-        userLine.textContent = "Modo demonstração (sem login)";
-        const [writeHealth, readHealth, authHealth] = await Promise.all([
-          fetchJson(`${WRITE_ORIGIN}/health`),
-          fetchJson(`${READ_ORIGIN}/health`),
-          fetchJson(`${AUTH_ORIGIN}/health`),
-        ]);
-        renderServices(
-          {
-            firebaseOk: Boolean(authHealth.data?.services?.firebaseOk),
-            mysqlOk: Boolean(writeHealth.data?.services?.mysqlOk),
-            sqliteOk: Boolean(readHealth.data?.services?.sqliteOk),
-          },
-          {
-            mysqlError: writeHealth.data?.errors?.mysqlError || null,
-            sqliteError: readHealth.data?.errors?.sqliteError || null,
-          }
-        );
-        kpiAbertos.textContent = "0";
-        kpiAndamento.textContent = "0";
-        setOut({ ok: true, demo: true });
       }
 
       tabLogin.addEventListener("click", () => setTab("login"));
@@ -746,11 +716,6 @@
       submitBtn.addEventListener("click", (e) => {
         e.preventDefault();
         handleSubmit();
-      });
-
-      guestBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        handleGuest();
       });
 
       logoutBtn.addEventListener("click", async () => {

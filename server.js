@@ -6,11 +6,10 @@ const admin = require("firebase-admin");
 const {
   createMySqlPool,
   getMySqlConfig,
-  getSqliteFilePath,
-  openSqliteDb,
   initMySql,
-  initSqlite,
-} = require("./database.config");
+} = require("./banco2_mysql");
+
+const { getSqliteFilePath, openSqliteDb, initSqlite } = require("./banco3_SQLite");
 
 function initFirebaseAdmin() {
   if (admin.apps.length > 0) return;
@@ -203,8 +202,8 @@ async function main() {
 
   process.stdout.write(
     `Banco 1 (Firebase): ${firebaseOk ? "OK" : "ERRO"}\n` +
-      `Banco 2 (MySQL): ${mysql.mysqlOk ? "OK" : `ERRO (${mysql.mysqlError})`}\n` +
-      `Banco 3 (SQLite): ${sqlite.sqliteOk ? "OK" : `ERRO (${sqlite.sqliteError})`}\n`
+      `Banco 2: ${mysql.mysqlOk ? "OK" : `ERRO (${mysql.mysqlError})`}\n` +
+      `Banco 3: ${sqlite.sqliteOk ? "OK" : `ERRO (${sqlite.sqliteError})`}\n`
   );
 
   startAuthServer(authPort);
