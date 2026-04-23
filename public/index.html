@@ -3,14 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auditoria de TI - Acesso</title>
+  <title>Sistema Auditoria de TI</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f4f8;
@@ -18,104 +13,125 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      color: #333;
     }
-
-    .login-container {
-      background: #ffffff;
-      padding: 40px 30px;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    .card {
+      background: #fff;
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
     }
-
-    h1 {
-      font-size: 24px;
-      text-align: center;
-      margin-bottom: 30px;
-      color: #1a202c;
-    }
-
-    .input-group {
-      margin-bottom: 16px;
-    }
-
+    h1 { font-size: 22px; text-align: center; margin-bottom: 25px; color: #1a202c; }
+    .input-group { margin-bottom: 12px; }
     input {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      font-size: 15px;
-      transition: all 0.2s ease;
-    }
-
-    input:focus {
+      border-radius: 8px;
+      font-size: 14px;
       outline: none;
-      border-color: #3182ce;
-      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
     }
-
+    input:focus { border-color: #3182ce; box-shadow: 0 0 0 2px rgba(49,130,206,0.1); }
     button {
       width: 100%;
-      padding: 14px;
-      background-color: #3182ce;
-      color: white;
+      padding: 12px;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      border-radius: 8px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease;
-      margin-top: 10px;
+      transition: 0.2s;
     }
-
-    button:hover {
-      background-color: #2b6cb0;
-    }
-
-    button:disabled {
-      background-color: #a0aec0;
-      cursor: not-allowed;
-    }
-
-    #resultado {
-      margin-top: 24px;
+    .btn-main { background: #3182ce; color: #fff; margin-top: 10px; }
+    .btn-main:hover { background: #2b6cb0; }
+    .btn-main:disabled { background: #cbd5e0; cursor: not-allowed; }
+    .toggle-link {
+      display: block;
       text-align: center;
-      font-size: 14px;
-      font-weight: 500;
-      min-height: 20px;
-      line-height: 1.5;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #4a5568;
+      text-decoration: none;
+      cursor: pointer;
     }
-
+    .toggle-link span { color: #3182ce; font-weight: 600; }
+    .resultado { margin-top: 20px; text-align: center; font-size: 13px; font-weight: 500; }
+    .hidden { display: none; }
     .status-ok { color: #38a169; }
     .status-erro { color: #e53e3e; }
-    .status-neutro { color: #718096; }
+    .status-neutro { color: #4a5568; }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .overlay.hidden {
+      display: none;
+    }
+    .floating-card {
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 14px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+      padding: 28px;
+      text-align: center;
+    }
+    .floating-card h2 {
+      font-size: 22px;
+      color: #1a202c;
+      margin-bottom: 10px;
+    }
+    .floating-card p {
+      color: #4a5568;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
-    <h1>Auditoria de TI</h1>
+  <div class="card" id="card-login">
+    <h1>Acesso Auditoria de TI</h1>
+    <div class="input-group"><input type="email" id="login-email" placeholder="E-mail corporativo" autocomplete="email"></div>
+    <div class="input-group"><input type="password" id="login-senha" placeholder="Senha" autocomplete="current-password"></div>
+    <button id="btn-login" class="btn-main">Acessar Sistema</button>
+    <a class="toggle-link" id="go-to-cadastro">Nao tem conta? <span>Criar agora</span></a>
+    <div id="res-login" class="resultado"></div>
+  </div>
 
-    <div class="input-group">
-      <input type="email" id="email" placeholder="E-mail corporativo" autocomplete="email" />
+  <div class="card hidden" id="card-cadastro">
+    <h1>Nova Conta</h1>
+    <div class="input-group"><input type="text" id="cad-nome" placeholder="Nome Completo" autocomplete="name"></div>
+    <div class="input-group"><input type="email" id="cad-email" placeholder="E-mail" autocomplete="email"></div>
+    <div class="input-group"><input type="password" id="cad-senha" placeholder="Senha (min. 6 caracteres)" autocomplete="new-password"></div>
+    <div class="input-group"><input type="password" id="cad-confirma" placeholder="Confirmar Senha" autocomplete="new-password"></div>
+    <button id="btn-cadastrar" class="btn-main">Finalizar Cadastro</button>
+    <a class="toggle-link" id="go-to-login">Ja sou cadastrado. <span>Fazer Login</span></a>
+    <div id="res-cad" class="resultado"></div>
+  </div>
+
+  <div class="overlay hidden" id="cadastro-sucesso-overlay">
+    <div class="floating-card">
+      <h2>Cadastro realizado com sucesso</h2>
+      <p id="cadastro-sucesso-texto">Sua conta foi criada. Agora faca login para entrar no sistema.</p>
+      <button id="btn-ir-login" class="btn-main">Fazer login</button>
     </div>
-
-    <div class="input-group">
-      <input type="password" id="senha" placeholder="Senha" autocomplete="current-password" />
-    </div>
-
-    <button id="entrar">Acessar Sistema</button>
-
-    <p id="resultado"></p>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth,
-      signInWithEmailAndPassword
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      updateProfile
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -127,86 +143,183 @@
       appId: "1:324210445904:web:095b5e2f5935abcd154b55"
     };
 
+    const AUTH_API_URL = "http://localhost:3001/auth";
+    const STATUS_API_URL = "/status";
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    const botao = document.getElementById("entrar");
-    const resultado = document.getElementById("resultado");
+    const cardLogin = document.getElementById("card-login");
+    const cardCad = document.getElementById("card-cadastro");
+    const btnLogin = document.getElementById("btn-login");
+    const btnCadastrar = document.getElementById("btn-cadastrar");
+    const resLogin = document.getElementById("res-login");
+    const resCad = document.getElementById("res-cad");
+    const cadastroSucessoOverlay = document.getElementById("cadastro-sucesso-overlay");
+    const cadastroSucessoTexto = document.getElementById("cadastro-sucesso-texto");
+    const btnIrLogin = document.getElementById("btn-ir-login");
 
-    async function fetchJson(url, options) {
-      const resp = await fetch(url, options);
-      const data = await resp.json().catch(() => ({}));
-      return { ok: resp.ok, status: resp.status, data };
+    function limparResultados() {
+      resLogin.className = "resultado";
+      resCad.className = "resultado";
+      resLogin.textContent = "";
+      resCad.textContent = "";
     }
 
-    botao.addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+    function alternarTelas(mostrarCadastro) {
+      limparResultados();
+      cadastroSucessoOverlay.classList.add("hidden");
+      cardLogin.classList.toggle("hidden", mostrarCadastro);
+      cardCad.classList.toggle("hidden", !mostrarCadastro);
+    }
+
+    function mostrarSucessoCadastro(nome, email) {
+      cadastroSucessoTexto.textContent = `Conta criada com sucesso para ${nome || email}. Agora faca login para entrar no sistema.`;
+      cadastroSucessoOverlay.classList.remove("hidden");
+      document.getElementById("login-email").value = email || "";
+      document.getElementById("login-senha").value = "";
+      document.getElementById("cad-nome").value = "";
+      document.getElementById("cad-email").value = "";
+      document.getElementById("cad-senha").value = "";
+      document.getElementById("cad-confirma").value = "";
+    }
+
+    function setLoading(botao, resultado, mensagem) {
+      botao.disabled = true;
+      resultado.className = "resultado status-neutro";
+      resultado.textContent = mensagem;
+    }
+
+    function clearLoading(botao) {
+      botao.disabled = false;
+    }
+
+    function criarErro(codigo, mensagem) {
+      const error = new Error(mensagem);
+      error.code = codigo;
+      return error;
+    }
+
+    function formatarErro(error) {
+      const codigo = error?.code || "erro/desconhecido";
+      const mensagem = error?.message || "Erro desconhecido.";
+      if (codigo === "auth/configuration-not-found") {
+        return "auth/configuration-not-found: Habilite o provedor E-mail/Senha no Firebase Console em Authentication > Sign-in method.";
+      }
+      return `${codigo}: ${mensagem}`;
+    }
+
+    async function finalizaAuth(user, resDiv) {
+      const token = await user.getIdToken(true);
+
+      let authResponse;
+      try {
+        authResponse = await fetch(AUTH_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token })
+        });
+      } catch (e) {
+        throw criarErro("node/offline", "Nao foi possivel conectar ao servidor Node.js para validar a sessao.");
+      }
+
+      if (!authResponse.ok) {
+        let detalhe = "";
+        try {
+          const data = await authResponse.json();
+          detalhe = data?.details?.message || data?.error || "";
+        } catch (e) {
+          detalhe = "";
+        }
+        throw criarErro("node/auth-error", detalhe || "O servidor Node.js recusou a validacao da sessao.");
+      }
+
+      let statusRes;
+      try {
+        statusRes = await fetch(STATUS_API_URL);
+      } catch (e) {
+        throw criarErro("node/offline", "Nao foi possivel conectar ao servidor Node.js para consultar o status dos bancos.");
+      }
+
+      if (!statusRes.ok) {
+        throw criarErro("node/status-error", "O servidor Node.js nao conseguiu retornar o status dos bancos.");
+      }
+
+      const status = await statusRes.json();
+      sessionStorage.setItem("idToken", token);
+      sessionStorage.setItem("userEmail", user.email || "");
+      sessionStorage.setItem("userName", user.displayName || "");
+      resDiv.className = "resultado status-ok";
+      resDiv.innerHTML = `Autenticado: ${user.displayName || user.email}<br>MySQL: ${status.mysql} | SQLite: ${status.sqlite}<br>Redirecionando para o dashboard...`;
+      window.location.href = "/dashboard.html";
+    }
+
+    document.getElementById("go-to-cadastro").onclick = () => alternarTelas(true);
+    document.getElementById("go-to-login").onclick = () => alternarTelas(false);
+    btnIrLogin.onclick = () => {
+      cadastroSucessoOverlay.classList.add("hidden");
+      alternarTelas(false);
+      document.getElementById("login-senha").focus();
+    };
+
+    btnLogin.onclick = async () => {
+      const email = document.getElementById("login-email").value.trim();
+      const senha = document.getElementById("login-senha").value;
 
       if (!email || !senha) {
-        resultado.textContent = "⚠️ Por favor, preencha o e-mail e a senha.";
-        resultado.className = "status-erro";
+        resLogin.className = "resultado status-erro";
+        resLogin.textContent = "Preencha e-mail e senha.";
         return;
       }
 
-      resultado.textContent = "Autenticando de forma segura...";
-      resultado.className = "status-neutro";
-      botao.disabled = true;
-      botao.textContent = "Aguarde...";
+      setLoading(btnLogin, resLogin, "Validando acesso...");
 
       try {
-        const credencial = await signInWithEmailAndPassword(auth, email, senha);
-        const token = await credencial.user.getIdToken(true);
-
-        const host = window.location.hostname;
-        const AUTH_ORIGIN = `http://${host}:3001`;
-        const WRITE_ORIGIN = `http://${host}:3002`;
-        const READ_ORIGIN = window.location.origin;
-
-        const loginResponse = await fetchJson(`${AUTH_ORIGIN}/auth`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ token })
-        });
-
-        if (!loginResponse.ok) {
-          throw new Error("Sessão recusada pelo servidor.");
-        }
-
-        const [writeStatus, readStatus] = await Promise.all([
-          fetchJson(`${WRITE_ORIGIN}/health`),
-          fetchJson(`${READ_ORIGIN}/health`)
-        ]);
-
-        const mysqlOk = Boolean(writeStatus.data?.services?.mysqlOk);
-        const sqliteOk = Boolean(readStatus.data?.services?.sqliteOk);
-        const mysqlText = mysqlOk ? "OK" : `ERRO${writeStatus.data?.errors?.mysqlError ? ` (${writeStatus.data.errors.mysqlError})` : ""}`;
-        const sqliteText = sqliteOk ? "OK" : `ERRO${readStatus.data?.errors?.sqliteError ? ` (${readStatus.data.errors.sqliteError})` : ""}`;
-
-        resultado.className = "status-ok";
-        resultado.innerHTML = `
-          ✅ <strong>Autenticação concluída!</strong><br>
-          <span style="font-size: 13px; color: #4a5568;">
-            Banco 2 (MySQL): ${mysqlText}<br>
-            Banco 3 (SQLite): ${sqliteText}
-          </span>
-        `;
-
-        sessionStorage.setItem("idToken", token);
-        sessionStorage.setItem("userEmail", email);
-        setTimeout(() => {
-          window.location.href = "/dashboard.html";
-        }, 600);
+        const cred = await signInWithEmailAndPassword(auth, email, senha);
+        await finalizaAuth(cred.user, resLogin);
       } catch (error) {
-        resultado.className = "status-erro";
-        resultado.textContent = "❌ Acesso negado. Verifique suas credenciais.";
+        console.log(error);
+        resLogin.className = "resultado status-erro";
+        resLogin.textContent = formatarErro(error);
       } finally {
-        botao.disabled = false;
-        botao.textContent = "Acessar Sistema";
+        clearLoading(btnLogin);
       }
-    });
+    };
+
+    btnCadastrar.onclick = async () => {
+      const nome = document.getElementById("cad-nome").value.trim();
+      const email = document.getElementById("cad-email").value.trim();
+      const senha = document.getElementById("cad-senha").value;
+      const confirma = document.getElementById("cad-confirma").value;
+
+      if (!nome || !email || !senha || !confirma) {
+        resCad.className = "resultado status-erro";
+        resCad.textContent = "Preencha todos os campos.";
+        return;
+      }
+
+      if (senha !== confirma) {
+        resCad.className = "resultado status-erro";
+        resCad.textContent = "Senhas nao conferem.";
+        return;
+      }
+
+      setLoading(btnCadastrar, resCad, "Criando conta...");
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, senha);
+        await updateProfile(cred.user, { displayName: nome });
+        await auth.signOut();
+        sessionStorage.clear();
+        mostrarSucessoCadastro(nome, email);
+      } catch (error) {
+        console.log(error);
+        resCad.className = "resultado status-erro";
+        resCad.textContent = formatarErro(error);
+      } finally {
+        clearLoading(btnCadastrar);
+      }
+    };
   </script>
 </body>
 </html>

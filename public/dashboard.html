@@ -256,6 +256,7 @@
 
     const token = sessionStorage.getItem("idToken");
     const email = sessionStorage.getItem("userEmail");
+    const userName = sessionStorage.getItem("userName");
     const userLine = document.getElementById("userLine");
     const logoutBtn = document.getElementById("logoutBtn");
 
@@ -269,7 +270,7 @@
     const WRITE_ORIGIN = `http://${host}:3002`;
     const READ_ORIGIN = window.location.origin;
 
-    userLine.textContent = email ? `Sessão: ${email}` : "Sessão ativa";
+    userLine.textContent = userName || email ? `Sessão: ${userName || email}` : "Sessão ativa";
 
     if (!token) {
       window.location.href = "/";

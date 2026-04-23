@@ -13,6 +13,15 @@ const {
 const { getSqliteFilePath, openSqliteDb, initSqlite } = require("./banco3_SQLite");
 const { criarChamado, listarRelatorios, sincronizarChamadoParaSqlite } = require("./database");
 
+function getFirebaseProjectId(serviceAccount) {
+  return (
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.GOOGLE_CLOUD_PROJECT ||
+    serviceAccount?.project_id ||
+    "sistema-de-auditoria-de-ti"
+  );
+}
+
 function initFirebaseAdmin() {
   if (admin.apps.length > 0) return;
 
@@ -21,6 +30,7 @@ function initFirebaseAdmin() {
     const serviceAccount = JSON.parse(serviceAccountJson);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
+      projectId: getFirebaseProjectId(serviceAccount),
     });
     return;
   }
@@ -34,12 +44,14 @@ function initFirebaseAdmin() {
     const serviceAccount = JSON.parse(raw);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
+      projectId: getFirebaseProjectId(serviceAccount),
     });
     return;
   }
 
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
+    projectId: getFirebaseProjectId(),
   });
 }
 
