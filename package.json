@@ -1,0 +1,20 @@
+{
+  "name": "trabalho-bd-sistema-ti",
+  "version": "1.0.0",
+  "description": "",
+  "main": "database.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "firebase-admin": "^13.8.0",
+    "mysql2": "^3.22.1",
+    "sqlite3": "^6.0.1"
+  }
+}
