@@ -209,6 +209,19 @@
       return `${codigo}: ${mensagem}`;
     }
 
+    function logAutenticacao(origem, user, status, token) {
+      console.group("Autenticacao do usuario");
+      console.log("Origem:", origem);
+      console.log("UID:", user?.uid || null);
+      console.log("Nome:", user?.displayName || null);
+      console.log("Email:", user?.email || null);
+      console.log("Token Firebase:", token || null);
+      console.log("MySQL:", status?.mysql || null);
+      console.log("SQLite:", status?.sqlite || null);
+      console.log("Horario:", new Date().toLocaleString("pt-BR"));
+      console.groupEnd();
+    }
+
     async function finalizaAuth(user, resDiv) {
       const token = await user.getIdToken(true);
 
@@ -246,6 +259,7 @@
       }
 
       const status = await statusRes.json();
+      logAutenticacao("frontend", user, status, token);
       sessionStorage.setItem("idToken", token);
       sessionStorage.setItem("userEmail", user.email || "");
       sessionStorage.setItem("userName", user.displayName || "");

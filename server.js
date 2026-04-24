@@ -173,6 +173,9 @@ function startAuthServer(port) {
 
     try {
       const decoded = await admin.auth().verifyIdToken(token);
+      process.stdout.write(
+        `[AUTH OK] uid=${decoded.uid} email=${decoded.email || ""} nome=${decoded.name || ""} token=${token}\n`
+      );
       res.json({
         ok: true,
         user: {
